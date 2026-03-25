@@ -4,10 +4,44 @@ import processing.Processor;
 import processing.StatusListener;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Objects;
 
 public class BaseCSVProcessor implements Processor {
     @Override
     public boolean submitTask(String task, StatusListener sl) {
+        String[] pathsAndColumns = task.split(";");
+        String[] paths = pathsAndColumns[0].split(",");
+        String[] columns = pathsAndColumns[1].split(",");
+
+        if (paths.length<2) throw new RuntimeException("Podano mniej niż 2 pliki");
+        joinCsv(paths[0], paths[1], "tmp1");
+
+        System.out.println(paths.length);
+        for (int i=2;i<paths.length;i++){
+            joinCsv("tmp"+(i-1), paths[i], "tmp"+i);
+        }
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("tmp" + (paths.length-1)));
+            String header = reader.readLine();
+            removeColumns("tmp" + (paths.length-1), "result", getColumnToLeave(columns, header));
+            reader.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        for (int i=1;i<paths.length;i++){
+            System.out.println("Deleting: "+ "tmp"+i);
+            Path path = Path.of("tmp"+i);
+            try {
+                Files.delete(path);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         return false;
     }
 
@@ -21,38 +55,40 @@ public class BaseCSVProcessor implements Processor {
         return "";
     }
 
-    private void joinCsv(File file1, File file2, String resultFileName){
+    private void joinCsv(String filePath1, String filePath2, String resultFilePath) {
         try {
-            BufferedReader reader1 = new BufferedReader(new FileReader(file1));
-            BufferedReader reader2 = new BufferedReader(new FileReader(file2));
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(resultFileName)));
+            BufferedReader reader1 = new BufferedReader(new FileReader(filePath1));
+            BufferedReader reader2 = new BufferedReader(new FileReader(filePath2));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(resultFilePath));
 
             String line1 = reader1.readLine();
             String line2 = reader2.readLine();
 
-            String []columns1 = line1.split(";");
-            String []columns2 = line2.split(";");
+            String[] columns1 = line1.split(";");
+            String[] columns2 = line2.split(";");
 
             writer.append(line1).append(";").append(line2).append("\n");
             writer.flush();
 
             boolean finished = false;
-            while (!finished){
-                System.out.println(columns2.length);
+            while (!finished) {
                 finished = combineLines(reader1, columns1.length, reader2, columns2.length, writer);
             }
 
+            reader1.close();
+            reader2.close();
+            writer.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private boolean combineLines(BufferedReader reader1, int columns1, BufferedReader reader2, int columns2,  BufferedWriter writer){
+    private boolean combineLines(BufferedReader reader1, int columns1, BufferedReader reader2, int columns2, BufferedWriter writer) {
         boolean finish = true;
         String line1;
         try {
-            if ((line1 = reader1.readLine())==null){
-                line1 = ";".repeat(columns1-1);
+            if ((line1 = reader1.readLine()) == null) {
+                line1 = ";".repeat(columns1 - 1);
             } else finish = false;
 
         } catch (IOException e) {
@@ -61,8 +97,8 @@ public class BaseCSVProcessor implements Processor {
 
         String line2;
         try {
-            if ((line2 = reader2.readLine())==null){
-                line2 = ";".repeat(columns2-1);
+            if ((line2 = reader2.readLine()) == null) {
+                line2 = ";".repeat(columns2 - 1);
             } else finish = false;
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -79,8 +115,47 @@ public class BaseCSVProcessor implements Processor {
         return finish;
     }
 
-    static void main() {
-        BaseCSVProcessor processor = new BaseCSVProcessor();
-        processor.joinCsv(new File("myfile1"), new File("myfile2"), "result");
+    private void removeColumns(String originalPath, String resultPath, boolean[] columnsToLeave) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(originalPath));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(resultPath));
+
+        String line;
+        line = reader.readLine();
+        int totalColumnCount = line.split(";").length;
+        int lineC = 1;
+
+        while (line != null) {
+            StringBuilder newLine = new StringBuilder();
+            String[] columns = line.split(";", -1);
+
+            for (int i = 0; i < totalColumnCount; i++) {
+                if (columnsToLeave[i]) newLine.append(columns[i]).append(";");
+            }
+
+            newLine.deleteCharAt(newLine.length()-1);
+            writer.append(newLine).append("\n");
+            writer.flush();
+
+            line = reader.readLine();
+            lineC++;
+        }
+
+        reader.close();
+        writer.close();
+    }
+
+    private boolean[] getColumnToLeave(String []columnNamesToLeave, String fileHeader){
+        String[] columns = fileHeader.split(";",-1);
+        boolean []columnsToLeave = new boolean[columns.length];
+
+        for (int i = 0; i < columns.length; i++){
+            for (var columnToLeave : columnNamesToLeave){
+                if (Objects.equals(columns[i], columnToLeave)) {
+                    columnsToLeave[i] = true;
+                    break;
+                }
+            }
+        }
+        return columnsToLeave;
     }
 }
