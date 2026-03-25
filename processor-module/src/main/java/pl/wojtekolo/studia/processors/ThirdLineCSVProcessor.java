@@ -8,12 +8,15 @@ public class ThirdLineCSVProcessor extends BaseCSVProcessor{
 
     @Override
     public boolean submitTask(String task, StatusListener sl) {
+        int taskId = BaseCSVProcessor.getTotalTasks();
+        BaseCSVProcessor.increaseTotalTasks();
         super.submitTask(task,sl);
         try {
             leaveOneOfEveryThreeRows();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        simulateProgress(taskId,0,100,100, sl);
         return true;
     }
 

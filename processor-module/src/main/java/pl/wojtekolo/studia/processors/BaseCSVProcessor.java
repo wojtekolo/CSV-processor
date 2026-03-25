@@ -1,14 +1,17 @@
 package pl.wojtekolo.studia.processors;
 
 import processing.Processor;
+import processing.Status;
 import processing.StatusListener;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 public abstract class BaseCSVProcessor implements Processor {
+    private static int totalTasks;
     @Override
     public boolean submitTask(String task, StatusListener sl) {
         String[] pathsAndColumns = task.split(";");
@@ -157,5 +160,37 @@ public abstract class BaseCSVProcessor implements Processor {
             }
         }
         return columnsToLeave;
+    }
+
+    protected void simulateProgress(int taskId, int currentProgress, int progressToMake, int delayMs, StatusListener sl) {
+        if (sl == null) return;
+
+        int targetProgress = Math.min(currentProgress + progressToMake, 100);
+        int progress = currentProgress;
+        ThreadLocalRandom rand = ThreadLocalRandom.current();
+
+        while (progress < targetProgress) {
+            progress += rand.nextInt(1, 6);
+            if (progress > targetProgress) progress = targetProgress;
+
+            sl.statusChanged(new Status(taskId, progress));
+
+            long delay = (long) (delayMs * rand.nextDouble(0.8, 1.2));
+
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+    }
+
+    protected static int getTotalTasks(){
+        return totalTasks;
+    }
+
+    protected static void increaseTotalTasks(){
+        totalTasks++;
     }
 }
