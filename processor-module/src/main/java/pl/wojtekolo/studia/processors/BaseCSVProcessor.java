@@ -8,7 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 
-public class BaseCSVProcessor implements Processor {
+public abstract class BaseCSVProcessor implements Processor {
     @Override
     public boolean submitTask(String task, StatusListener sl) {
         String[] pathsAndColumns = task.split(";");
@@ -26,7 +26,7 @@ public class BaseCSVProcessor implements Processor {
         try {
             BufferedReader reader = new BufferedReader(new FileReader("tmp" + (paths.length-1)));
             String header = reader.readLine();
-            removeColumns("tmp" + (paths.length-1), "result", getColumnToLeave(columns, header));
+            removeColumns("tmp" + (paths.length-1), "final-full", getColumnToLeave(columns, header));
             reader.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
