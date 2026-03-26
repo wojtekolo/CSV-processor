@@ -49,11 +49,6 @@ public abstract class BaseCSVProcessor implements Processor {
     }
 
     @Override
-    public String getInfo() {
-        return "Base processor for joining csv files";
-    }
-
-    @Override
     public String getResult() {
         return "Error";
     }

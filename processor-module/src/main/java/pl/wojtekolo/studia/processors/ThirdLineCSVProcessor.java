@@ -25,6 +25,11 @@ public class ThirdLineCSVProcessor extends BaseCSVProcessor{
         return new File("final-three").getAbsolutePath();
     }
 
+    @Override
+    public String getInfo() {
+        return "Zostawia tylko co trzeci wiersz";
+    }
+
     private void leaveOneOfEveryThreeRows() throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader("final-full"));
         BufferedWriter writer = new BufferedWriter(new FileWriter("final-three"));

@@ -25,6 +25,11 @@ public class SecondLineCSVProcessor extends BaseCSVProcessor {
         return new File("final-two").getAbsolutePath();
     }
 
+    @Override
+    public String getInfo() {
+        return "Zostawia tylko co drugi wiersz";
+    }
+
     private void leaveOneOfEveryTwoRows() throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader("final-full"));
         BufferedWriter writer = new BufferedWriter(new FileWriter("final-two"));
