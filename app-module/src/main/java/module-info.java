@@ -1,5 +1,4 @@
 module app.module {
-//    requires lib.module;
     requires javafx.controls;
     requires javafx.fxml;
     requires api.module;

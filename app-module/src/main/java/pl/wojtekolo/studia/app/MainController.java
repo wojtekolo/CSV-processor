@@ -8,6 +8,7 @@ import processing.Status;
 import processing.StatusListener;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,13 +33,18 @@ public class MainController {
 
     List<String> selectedFiles = new ArrayList<>();
 
-    private final Service service = new Service();
+    private final Service service = new Service(new MyClassLoader("processor-module/target/classes"));
 
     @FXML
     public void initialize() {
         colPaths.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue()));
         colColumns.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue()));
-        cbProcessor.getItems().addAll(service.getProcessors());
+        try {
+            cbProcessor.getItems().addAll(service.getProcessors());
+        } catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException | InstantiationException |
+                 IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @FXML

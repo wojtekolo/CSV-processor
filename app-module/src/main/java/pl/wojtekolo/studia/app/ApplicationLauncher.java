@@ -14,7 +14,7 @@ public class ApplicationLauncher extends javafx.application.Application {
 
         Scene scene = new Scene(root);
         stage.setScene(scene);
-        stage.setTitle("Lab 01 - Archiwizator");
+        stage.setTitle("Lab 04 - Łącznik plików CSV. Z własnym ładowaczem klas");
         stage.show();
     }
 }
