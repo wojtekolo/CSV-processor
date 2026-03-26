@@ -4,11 +4,10 @@ import processing.Processor;
 
 public record ProcessorInfoDto(
         Processor processor,
-        String name,
         String info
 ) {
     @Override
     public String toString() {
-        return "Nazwa: " + name + ", info: " + info;
+        return "Typ operacji:  " + info;
     }
 }

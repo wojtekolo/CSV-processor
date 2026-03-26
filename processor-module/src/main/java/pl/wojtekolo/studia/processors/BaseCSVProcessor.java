@@ -21,7 +21,6 @@ public abstract class BaseCSVProcessor implements Processor {
         if (paths.length<2) throw new RuntimeException("Podano mniej niż 2 pliki");
         joinCsv(paths[0], paths[1], "tmp1");
 
-        System.out.println(paths.length);
         for (int i=2;i<paths.length;i++){
             joinCsv("tmp"+(i-1), paths[i], "tmp"+i);
         }

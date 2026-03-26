@@ -26,17 +26,17 @@ public class Service {
         for (int i = 0; i < columns.size()-1; i++){
             task.append(columns.get(i)).append(",");
         }
-        task.append(paths.getLast());
+        task.append(columns.getLast());
 
         return processor.processor().submitTask(task.toString(), listener);
     }
 
     public List<ProcessorInfoDto> getProcessors() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         List<ProcessorInfoDto> result = new ArrayList<>();
-        Processor processor1 = (Processor) classLoader.loadClass("SecondLineCSVProcessor").getConstructor().newInstance();
-        Processor processor2 = (Processor) classLoader.loadClass("ThirdLineCSVProcessor").getConstructor().newInstance();
-        result.add(new ProcessorInfoDto(processor1, "eee", processor1.getInfo()));
-        result.add(new ProcessorInfoDto(processor2, "aaa", processor2.getInfo()));
+        Processor processor1 = (Processor) classLoader.loadClass("pl.wojtekolo.studia.processors.SecondLineCSVProcessor").getConstructor().newInstance();
+        Processor processor2 = (Processor) classLoader.loadClass("pl.wojtekolo.studia.processors.ThirdLineCSVProcessor").getConstructor().newInstance();
+        result.add(new ProcessorInfoDto(processor1, processor1.getInfo()));
+        result.add(new ProcessorInfoDto(processor2, processor2.getInfo()));
         return result;
     }
 
