@@ -1,7 +1,5 @@
 package pl.wojtekolo.studia.app;
 
-import processing.Processor;
-
 public record ProcessorInfoDto(
         int id,
         String info

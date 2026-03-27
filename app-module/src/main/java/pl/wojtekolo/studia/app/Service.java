@@ -1,6 +1,5 @@
 package pl.wojtekolo.studia.app;
 
-import processing.Processor;
 import processing.StatusListener;
 
 import java.lang.reflect.Constructor;
@@ -69,10 +68,6 @@ public class Service {
         }
 
         return result;
-    }
-
-    public Processor loadProcessor(String classPath){
-        return new ExampleProcessor();
     }
 
     public String getResult(Object processor) {
