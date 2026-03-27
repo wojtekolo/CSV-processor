@@ -12,31 +12,47 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public abstract class BaseCSVProcessor implements Processor {
     private static int totalTasks;
+    protected int taskId;
+    protected Path rootPath;
+
     @Override
     public boolean submitTask(String task, StatusListener sl) {
+        rootPath = Path.of("data", "task_" + taskId);
+        try {
+            Files.createDirectories(rootPath);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         String[] pathsAndColumns = task.split(";");
         String[] paths = pathsAndColumns[0].split(",");
         String[] columns = pathsAndColumns[1].split(",");
 
-        if (paths.length<2) throw new RuntimeException("Podano mniej niż 2 pliki");
-        joinCsv(paths[0], paths[1], "tmp1");
+        if (paths.length < 2) throw new RuntimeException("Podano mniej niż 2 pliki");
+        joinCsv(paths[0], paths[1], String.valueOf(rootPath.resolve("tmp1")));
 
-        for (int i=2;i<paths.length;i++){
-            joinCsv("tmp"+(i-1), paths[i], "tmp"+i);
+        for (int i = 2; i < paths.length; i++) {
+            joinCsv(String.valueOf(rootPath.resolve("tmp" + (i - 1))), paths[i], String.valueOf(rootPath.resolve("tmp" + i)));
         }
-
         try {
-            BufferedReader reader = new BufferedReader(new FileReader("tmp" + (paths.length-1)));
+            System.out.println("2");
+            BufferedReader reader = new BufferedReader(new FileReader(String.valueOf(rootPath.resolve("tmp" + (paths.length - 1)))));
             String header = reader.readLine();
-            removeColumns("tmp" + (paths.length-1), "final-full", getColumnToLeave(columns, header));
+            removeColumns(
+                    String.valueOf(rootPath.resolve("tmp" + (paths.length - 1))),
+                    String.valueOf(rootPath.resolve("final-full")),
+                    getColumnToLeave(columns, header)
+            );
             reader.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        for (int i=1;i<paths.length;i++){
-            System.out.println("Deleting: "+ "tmp"+i);
-            Path path = Path.of("tmp"+i);
+        System.out.println("4");
+        for (int i = 1; i < paths.length; i++) {
+            System.out.println("5");
+            System.out.println("Deleting: " + "tmp" + i);
+            Path path = rootPath.resolve("tmp" +i);
             try {
                 Files.delete(path);
             } catch (IOException e) {
@@ -54,6 +70,9 @@ public abstract class BaseCSVProcessor implements Processor {
 
     private void joinCsv(String filePath1, String filePath2, String resultFilePath) {
         try {
+            System.out.println(filePath1);
+            System.out.println(filePath2);
+            System.out.println(resultFilePath);
             BufferedReader reader1 = new BufferedReader(new FileReader(filePath1));
             BufferedReader reader2 = new BufferedReader(new FileReader(filePath2));
             BufferedWriter writer = new BufferedWriter(new FileWriter(resultFilePath));
@@ -129,7 +148,7 @@ public abstract class BaseCSVProcessor implements Processor {
                 if (columnsToLeave[i]) newLine.append(columns[i]).append(";");
             }
 
-            newLine.deleteCharAt(newLine.length()-1);
+            newLine.deleteCharAt(newLine.length() - 1);
             writer.append(newLine).append("\n");
             writer.flush();
 
@@ -141,12 +160,12 @@ public abstract class BaseCSVProcessor implements Processor {
         writer.close();
     }
 
-    private boolean[] getColumnToLeave(String []columnNamesToLeave, String fileHeader){
-        String[] columns = fileHeader.split(";",-1);
-        boolean []columnsToLeave = new boolean[columns.length];
+    private boolean[] getColumnToLeave(String[] columnNamesToLeave, String fileHeader) {
+        String[] columns = fileHeader.split(";", -1);
+        boolean[] columnsToLeave = new boolean[columns.length];
 
-        for (int i = 0; i < columns.length; i++){
-            for (var columnToLeave : columnNamesToLeave){
+        for (int i = 0; i < columns.length; i++) {
+            for (var columnToLeave : columnNamesToLeave) {
                 if (Objects.equals(columns[i], columnToLeave)) {
                     columnsToLeave[i] = true;
                     break;
@@ -180,11 +199,15 @@ public abstract class BaseCSVProcessor implements Processor {
         }
     }
 
-    protected static int getTotalTasks(){
+    protected static int getTotalTasks() {
         return totalTasks;
     }
 
-    protected static void increaseTotalTasks(){
+    protected static void increaseTotalTasks() {
         totalTasks++;
+    }
+
+    protected String getPath(String file){
+        return String.valueOf(rootPath.resolve(file));
     }
 }

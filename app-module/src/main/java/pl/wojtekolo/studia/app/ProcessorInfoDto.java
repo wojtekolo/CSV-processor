@@ -3,7 +3,7 @@ package pl.wojtekolo.studia.app;
 import processing.Processor;
 
 public record ProcessorInfoDto(
-        Processor processor,
+        int id,
         String info
 ) {
     @Override

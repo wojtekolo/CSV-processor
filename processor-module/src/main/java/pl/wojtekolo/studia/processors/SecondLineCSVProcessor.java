@@ -3,26 +3,34 @@ package pl.wojtekolo.studia.processors;
 import processing.StatusListener;
 
 import java.io.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class SecondLineCSVProcessor extends BaseCSVProcessor {
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private String result = "Error";
 
     @Override
     public boolean submitTask(String task, StatusListener sl) {
-        int taskId = BaseCSVProcessor.getTotalTasks();
-        BaseCSVProcessor.increaseTotalTasks();
-        super.submitTask(task,sl);
-        try {
-            leaveOneOfEveryTwoRows();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        simulateProgress(taskId,0,100,100, sl);
+
+        executor.submit(()->{
+            BaseCSVProcessor.increaseTotalTasks();
+            taskId = BaseCSVProcessor.getTotalTasks();
+            super.submitTask(task,sl);
+            try {
+                leaveOneOfEveryTwoRows();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            simulateProgress(taskId,0,100,100, sl);
+        });
+
         return true;
     }
 
     @Override
     public String getResult() {
-        return new File("final-two").getAbsolutePath();
+        return new File(String.valueOf(rootPath.resolve("final-two"))).getAbsolutePath();
     }
 
     @Override
@@ -31,8 +39,8 @@ public class SecondLineCSVProcessor extends BaseCSVProcessor {
     }
 
     private void leaveOneOfEveryTwoRows() throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader("final-full"));
-        BufferedWriter writer = new BufferedWriter(new FileWriter("final-two"));
+        BufferedReader reader = new BufferedReader(new FileReader(String.valueOf(rootPath.resolve("final-full"))));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(String.valueOf(rootPath.resolve("final-two"))));
 
         String line = reader.readLine();
         writer.append(line).append("\n");
