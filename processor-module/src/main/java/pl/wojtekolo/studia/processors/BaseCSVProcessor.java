@@ -29,18 +29,18 @@ public abstract class BaseCSVProcessor implements Processor {
         String[] columns = pathsAndColumns[1].split(",");
 
         if (paths.length < 2) throw new RuntimeException("Podano mniej niż 2 pliki");
-        joinCsv(paths[0], paths[1], String.valueOf(rootPath.resolve("tmp1")));
+        joinCsv(paths[0], paths[1], getPath("tmp1"));
 
         for (int i = 2; i < paths.length; i++) {
-            joinCsv(String.valueOf(rootPath.resolve("tmp" + (i - 1))), paths[i], String.valueOf(rootPath.resolve("tmp" + i)));
+            joinCsv(getPath("tmp" + (i - 1)), paths[i], getPath("tmp" + i));
         }
         try {
             System.out.println("2");
-            BufferedReader reader = new BufferedReader(new FileReader(String.valueOf(rootPath.resolve("tmp" + (paths.length - 1)))));
+            BufferedReader reader = new BufferedReader(new FileReader(getPath("tmp" + (paths.length - 1))));
             String header = reader.readLine();
             removeColumns(
-                    String.valueOf(rootPath.resolve("tmp" + (paths.length - 1))),
-                    String.valueOf(rootPath.resolve("final-full")),
+                    getPath("tmp" + (paths.length - 1)),
+                    getPath("final-full"),
                     getColumnToLeave(columns, header)
             );
             reader.close();

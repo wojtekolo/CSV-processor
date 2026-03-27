@@ -8,7 +8,7 @@ import java.util.concurrent.Executors;
 
 public class SecondLineCSVProcessor extends BaseCSVProcessor {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private String result = "Error";
+    private String result = null;
 
     @Override
     public boolean submitTask(String task, StatusListener sl) {
@@ -23,6 +23,7 @@ public class SecondLineCSVProcessor extends BaseCSVProcessor {
                 throw new RuntimeException(e);
             }
             simulateProgress(taskId,0,100,100, sl);
+            result = new File(getPath("final-two")).getAbsolutePath();
         });
 
         return true;
@@ -30,7 +31,7 @@ public class SecondLineCSVProcessor extends BaseCSVProcessor {
 
     @Override
     public String getResult() {
-        return new File(String.valueOf(rootPath.resolve("final-two"))).getAbsolutePath();
+        return result;
     }
 
     @Override
@@ -39,8 +40,8 @@ public class SecondLineCSVProcessor extends BaseCSVProcessor {
     }
 
     private void leaveOneOfEveryTwoRows() throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(String.valueOf(rootPath.resolve("final-full"))));
-        BufferedWriter writer = new BufferedWriter(new FileWriter(String.valueOf(rootPath.resolve("final-two"))));
+        BufferedReader reader = new BufferedReader(new FileReader(getPath("final-full")));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(getPath("final-two")));
 
         String line = reader.readLine();
         writer.append(line).append("\n");
