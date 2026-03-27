@@ -35,7 +35,6 @@ public abstract class BaseCSVProcessor implements Processor {
             joinCsv(getPath("tmp" + (i - 1)), paths[i], getPath("tmp" + i));
         }
         try {
-            System.out.println("2");
             BufferedReader reader = new BufferedReader(new FileReader(getPath("tmp" + (paths.length - 1))));
             String header = reader.readLine();
             removeColumns(
@@ -48,10 +47,7 @@ public abstract class BaseCSVProcessor implements Processor {
             throw new RuntimeException(e);
         }
 
-        System.out.println("4");
         for (int i = 1; i < paths.length; i++) {
-            System.out.println("5");
-            System.out.println("Deleting: " + "tmp" + i);
             Path path = rootPath.resolve("tmp" +i);
             try {
                 Files.delete(path);
@@ -70,9 +66,6 @@ public abstract class BaseCSVProcessor implements Processor {
 
     private void joinCsv(String filePath1, String filePath2, String resultFilePath) {
         try {
-            System.out.println(filePath1);
-            System.out.println(filePath2);
-            System.out.println(resultFilePath);
             BufferedReader reader1 = new BufferedReader(new FileReader(filePath1));
             BufferedReader reader2 = new BufferedReader(new FileReader(filePath2));
             BufferedWriter writer = new BufferedWriter(new FileWriter(resultFilePath));

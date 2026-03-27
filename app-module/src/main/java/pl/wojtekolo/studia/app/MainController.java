@@ -123,6 +123,7 @@ public class MainController {
 
             if (processor == null) {
                 javafx.application.Platform.runLater(() -> showErrorMessage("Błąd przy uruchamianiu zadania."));
+                return;
             }
 
             String result = null;
