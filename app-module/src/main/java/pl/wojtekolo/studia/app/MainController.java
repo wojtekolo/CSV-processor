@@ -85,16 +85,13 @@ public class MainController {
     public void resetColumns() {
         tableColumns.getItems().clear();
     }
-//    }
 
     @FXML
     public void submitTask() {
-        System.out.println(pbProgress.getProgress());
         if (pbProgress.getProgress() < 1 && pbProgress.getProgress() > 0) {
             showErrorMessage("Poprzednie zadanie się nie zakończyło");
             return;
         }
-        List<String> tak = tableColumns.getItems();
         if (selectedFiles.isEmpty()) {
             showErrorMessage("Nie wybrano plików");
             return;
@@ -118,12 +115,28 @@ public class MainController {
             }
         };
         new Thread(() -> {
-            boolean result = service.submit(
+            Object processor = service.submit(
                     tablePaths.getItems(),
                     tableColumns.getItems(),
                     cbProcessor.getValue(),
                     listener);
-//            showSuccessMessage("Wynik: "+result);
+
+            if (processor == null) {
+                javafx.application.Platform.runLater(() -> showErrorMessage("Błąd przy uruchamianiu zadania."));
+            }
+
+            String result = null;
+            while (result == null){
+                try {
+                    Thread.sleep(800);
+                    result = service.getResult(processor);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            String finalResult = result;
+            javafx.application.Platform.runLater(() -> showSuccessMessage("Zadanie zakończone. Wynik w pliku: "+ finalResult));
+
         }
         ).start();
     }

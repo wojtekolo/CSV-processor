@@ -18,12 +18,13 @@ public class Service {
         try {
             processorClasses.put(1, classLoader.loadClass("pl.wojtekolo.studia.processors.SecondLineCSVProcessor"));
             processorClasses.put(2, classLoader.loadClass("pl.wojtekolo.studia.processors.ThirdLineCSVProcessor"));
+            processorClasses.put(3, classLoader.loadClass("pl.wojtekolo.studia.processors.BrokenProcessor"));
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public boolean submit(List<String> paths, List<String> columns, ProcessorInfoDto processorInfo, StatusListener listener) {
+    public Object submit(List<String> paths, List<String> columns, ProcessorInfoDto processorInfo, StatusListener listener) {
 
         StringBuilder task = new StringBuilder();
 
@@ -44,13 +45,10 @@ public class Service {
 
             Method submitMethod = processorClass.getDeclaredMethod("submitTask", String.class, StatusListener.class);
 
-            Object result = submitMethod.invoke(processorObject, task.toString(), listener);
+            boolean taskStarted = (boolean) submitMethod.invoke(processorObject, task.toString(), listener);
 
-            if (result instanceof Boolean b){
-                return b;
-            } else {
-                return false;
-            }
+            return (taskStarted) ? processorObject : null;
+
         } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
@@ -75,5 +73,14 @@ public class Service {
 
     public Processor loadProcessor(String classPath){
         return new ExampleProcessor();
+    }
+
+    public String getResult(Object processor) {
+        try {
+            Method getResultMethod = processor.getClass().getMethod("getResult");
+            return (String) getResultMethod.invoke(processor);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -65,7 +65,7 @@ public abstract class BaseCSVProcessor implements Processor {
 
     @Override
     public String getResult() {
-        return "Error";
+        return null;
     }
 
     private void joinCsv(String filePath1, String filePath2, String resultFilePath) {
