@@ -74,7 +74,6 @@ public abstract class BaseCSVProcessor implements Processor {
             String[] columns2 = line2.split(";");
 
             writer.append(line1).append(";").append(line2).append("\n");
-            writer.flush();
 
             boolean finished = false;
             while (!finished) {
@@ -110,7 +109,6 @@ public abstract class BaseCSVProcessor implements Processor {
 
         try {
             writer.append(line1).append(";").append(line2).append("\n");
-            writer.flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -135,7 +133,6 @@ public abstract class BaseCSVProcessor implements Processor {
 
                 newLine.deleteCharAt(newLine.length() - 1);
                 writer.append(newLine).append("\n");
-                writer.flush();
 
                 line = reader.readLine();
             }

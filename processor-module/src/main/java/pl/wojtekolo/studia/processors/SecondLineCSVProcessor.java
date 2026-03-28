@@ -54,7 +54,6 @@ public class SecondLineCSVProcessor extends BaseCSVProcessor {
                     write = true;
                 }
             }
-            writer.flush();
         }
     }
 }

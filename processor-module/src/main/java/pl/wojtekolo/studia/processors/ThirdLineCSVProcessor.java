@@ -53,7 +53,6 @@ public class ThirdLineCSVProcessor extends BaseCSVProcessor{
                     count++;
                 }
             }
-            writer.flush();
         }
     }
 }
