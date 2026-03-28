@@ -40,25 +40,22 @@ public class SecondLineCSVProcessor extends BaseCSVProcessor {
     }
 
     private void leaveOneOfEveryTwoRows() throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(getPath("final-full")));
-        BufferedWriter writer = new BufferedWriter(new FileWriter(getPath("final-two")));
+        try (BufferedReader reader = new BufferedReader(new FileReader(getPath("final-full")));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(getPath("final-two")))){
+            String line = reader.readLine();
+            writer.append(line).append("\n");
 
-        String line = reader.readLine();
-        writer.append(line).append("\n");
-
-        boolean write = true;
-        while ((line = reader.readLine()) != null){
-            if (write){
-                writer.append(line).append("\n");
-                write = false;
-            }else {
-                write = true;
+            boolean write = true;
+            while ((line = reader.readLine()) != null){
+                if (write){
+                    writer.append(line).append("\n");
+                    write = false;
+                }else {
+                    write = true;
+                }
             }
+            writer.flush();
         }
-
-        writer.flush();
-        writer.close();
-        reader.close();
     }
 }
 

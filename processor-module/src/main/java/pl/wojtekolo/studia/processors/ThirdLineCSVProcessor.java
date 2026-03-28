@@ -38,24 +38,22 @@ public class ThirdLineCSVProcessor extends BaseCSVProcessor{
     }
 
     private void leaveOneOfEveryThreeRows() throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(getPath("final-full")));
-        BufferedWriter writer = new BufferedWriter(new FileWriter(getPath("final-three")));
+        try (BufferedReader reader = new BufferedReader(new FileReader(getPath("final-full")));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(getPath("final-three")))) {
 
-        String line = reader.readLine();
-        writer.append(line).append("\n");
+            String line = reader.readLine();
+            writer.append(line).append("\n");
 
-        int count = 3;
-        while ((line = reader.readLine()) != null){
-            if (count==3){
-                writer.append(line).append("\n");
-                count=1;
-            }else {
-                count++;
+            int count = 3;
+            while ((line = reader.readLine()) != null){
+                if (count==3){
+                    writer.append(line).append("\n");
+                    count=1;
+                }else {
+                    count++;
+                }
             }
+            writer.flush();
         }
-
-        writer.flush();
-        writer.close();
-        reader.close();
     }
 }

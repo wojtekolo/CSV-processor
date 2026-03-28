@@ -34,15 +34,13 @@ public abstract class BaseCSVProcessor implements Processor {
         for (int i = 2; i < paths.length; i++) {
             joinCsv(getPath("tmp" + (i - 1)), paths[i], getPath("tmp" + i));
         }
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(getPath("tmp" + (paths.length - 1))));
+        try (BufferedReader reader = new BufferedReader(new FileReader(getPath("tmp" + (paths.length - 1))))){
             String header = reader.readLine();
             removeColumns(
                     getPath("tmp" + (paths.length - 1)),
                     getPath("final-full"),
                     getColumnToLeave(columns, header)
             );
-            reader.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -65,10 +63,9 @@ public abstract class BaseCSVProcessor implements Processor {
     }
 
     private void joinCsv(String filePath1, String filePath2, String resultFilePath) {
-        try {
-            BufferedReader reader1 = new BufferedReader(new FileReader(filePath1));
-            BufferedReader reader2 = new BufferedReader(new FileReader(filePath2));
-            BufferedWriter writer = new BufferedWriter(new FileWriter(resultFilePath));
+        try (BufferedReader reader1 = new BufferedReader(new FileReader(filePath1));
+             BufferedReader reader2 = new BufferedReader(new FileReader(filePath2));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(resultFilePath))) {
 
             String line1 = reader1.readLine();
             String line2 = reader2.readLine();
@@ -83,10 +80,6 @@ public abstract class BaseCSVProcessor implements Processor {
             while (!finished) {
                 finished = combineLines(reader1, columns1.length, reader2, columns2.length, writer);
             }
-
-            reader1.close();
-            reader2.close();
-            writer.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -113,7 +106,7 @@ public abstract class BaseCSVProcessor implements Processor {
             throw new RuntimeException(e);
         }
 
-        if (finish) return finish;
+        if (finish) return true;
 
         try {
             writer.append(line1).append(";").append(line2).append("\n");
@@ -121,36 +114,33 @@ public abstract class BaseCSVProcessor implements Processor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return finish;
+        return false;
     }
 
     private void removeColumns(String originalPath, String resultPath, boolean[] columnsToLeave) throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(originalPath));
-        BufferedWriter writer = new BufferedWriter(new FileWriter(resultPath));
+        try (BufferedReader reader = new BufferedReader(new FileReader(originalPath));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(resultPath))){
 
-        String line;
-        line = reader.readLine();
-        int totalColumnCount = line.split(";").length;
-        int lineC = 1;
+            String line;
+            line = reader.readLine();
+            int totalColumnCount = line.split(";").length;
 
-        while (line != null) {
-            StringBuilder newLine = new StringBuilder();
-            String[] columns = line.split(";", -1);
+            while (line != null) {
+                StringBuilder newLine = new StringBuilder();
+                String[] columns = line.split(";", -1);
 
-            for (int i = 0; i < totalColumnCount; i++) {
-                if (columnsToLeave[i]) newLine.append(columns[i]).append(";");
+                for (int i = 0; i < totalColumnCount; i++) {
+                    if (columnsToLeave[i]) newLine.append(columns[i]).append(";");
+                }
+
+                newLine.deleteCharAt(newLine.length() - 1);
+                writer.append(newLine).append("\n");
+                writer.flush();
+
+                line = reader.readLine();
             }
 
-            newLine.deleteCharAt(newLine.length() - 1);
-            writer.append(newLine).append("\n");
-            writer.flush();
-
-            line = reader.readLine();
-            lineC++;
         }
-
-        reader.close();
-        writer.close();
     }
 
     private boolean[] getColumnToLeave(String[] columnNamesToLeave, String fileHeader) {
